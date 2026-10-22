@@ -1,5 +1,8 @@
 # Asistente de llamadas para la carpintería metálica
 
+> En este repositorio hay dos aplicaciones independientes: el asistente de llamadas (esta
+> carpeta) y la app de toma de medidas, en [`medidas/`](medidas/README.md).
+
 Contesta las llamadas cuando tú no puedes, habla con el cliente, apunta lo que necesita
 y te lo deja resumido en una página web que miras desde el móvil cuando te venga bien.
 Sigues usando **tu mismo teléfono y tu mismo número**.

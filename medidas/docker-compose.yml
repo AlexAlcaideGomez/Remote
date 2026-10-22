@@ -1,0 +1,9 @@
+services:
+  medidas:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8001:8000"
+    volumes:
+      - ./datos:/datos
