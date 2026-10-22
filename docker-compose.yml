@@ -1,0 +1,10 @@
+services:
+  asistente:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./datos:/datos
+      - ./negocio.md:/app/negocio.md:ro

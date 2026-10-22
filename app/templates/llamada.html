@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}{{ (llamada.resumen or {}).titulo or 'Llamada' }}{% endblock %}
+{% block contenido %}
+  <p><a class="boton" href="/">← Volver</a></p>
+  {% include "_tarjeta.html" %}
+
+  <h2>Conversación</h2>
+  <div class="conversacion">
+    {% for t in llamada.turnos %}
+      <p class="{{ t.quien }}"><b>{{ 'Cliente' if t.quien == 'cliente' else 'Asistente' }}</b>{{ t.texto }}</p>
+    {% else %}
+      <p class="vacio">No hubo conversación.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

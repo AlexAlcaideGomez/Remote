@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block cabecera %}<meta http-equiv="refresh" content="60">{% endblock %}
+{% block contenido %}
+  <h2>Pendientes ({{ pendientes | length }})</h2>
+  {% for llamada in pendientes %}
+    {% include "_tarjeta.html" %}
+  {% else %}
+    <p class="vacio">No hay recados pendientes. 👍</p>
+  {% endfor %}
+
+  {% if hechas %}
+  <h2>Hechos</h2>
+  {% for llamada in hechas %}
+    {% include "_tarjeta.html" %}
+  {% endfor %}
+  {% endif %}
+{% endblock %}

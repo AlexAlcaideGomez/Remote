@@ -1,0 +1,34 @@
+{% set r = llamada.resumen or {} %}
+{% set telefono = r.telefono_contacto or llamada.numero %}
+<article class="tarjeta {{ r.urgencia or '' }}{% if llamada.hecha %} hecha{% endif %}">
+  <div class="fila">
+    <p class="titulo"><a href="/llamada/{{ llamada.call_sid }}">
+      {% if llamada.estado in ('en_curso', 'resumiendo') %}⏳ {% if llamada.estado == 'en_curso' %}Llamada en curso…{% else %}Resumiendo…{% endif %}
+      {% else %}{{ r.titulo or 'Llamada' }}{% endif %}
+    </a></p>
+    <span class="meta">{{ llamada.inicio | hora }}</span>
+  </div>
+  <div class="meta">
+    {{ r.nombre or 'Sin nombre' }}{% if r.empresa %} · {{ r.empresa }}{% endif %}
+    · {{ telefono or 'número oculto' }}
+  </div>
+  {% if r %}
+  <div style="margin-top:6px">
+    {% if r.urgencia == 'alta' %}<span class="etiqueta alta">URGENTE</span>{% endif %}
+    <span class="etiqueta">{{ MOTIVOS.get(r.motivo, 'Otro') }}</span>
+    {% if r.cuando_llamar %}<span class="etiqueta">🕒 {{ r.cuando_llamar }}</span>{% endif %}
+  </div>
+  <p style="margin:8px 0 0">{{ r.resumen }}</p>
+  {% if r.datos %}<ul class="datos">{% for d in r.datos %}<li>{{ d }}</li>{% endfor %}</ul>{% endif %}
+  {% if r.que_hacer %}<p class="accion">👉 {{ r.que_hacer }}</p>{% endif %}
+  {% endif %}
+  <div class="botones">
+    {% if telefono %}
+    <a class="boton principal" href="tel:{{ telefono | replace(' ', '') }}">📞 Llamar</a>
+    <a class="boton" href="https://wa.me/{{ telefono | digitos }}" target="_blank" rel="noopener">WhatsApp</a>
+    {% endif %}
+    <form method="post" action="/llamada/{{ llamada.call_sid }}/hecha">
+      <button class="boton" type="submit">{% if llamada.hecha %}↩️ Volver a pendiente{% else %}✅ Hecho{% endif %}</button>
+    </form>
+  </div>
+</article>
