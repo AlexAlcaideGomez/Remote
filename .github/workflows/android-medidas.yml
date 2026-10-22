@@ -1,0 +1,52 @@
+name: App Android de medidas
+
+# Fabrica el archivo de instalación (APK) de la app de medidas cada vez que cambia,
+# y lo publica en "Releases" para descargarlo desde el móvil.
+on:
+  push:
+    paths:
+      - "medidas-android/**"
+      - ".github/workflows/android-medidas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14.3"
+
+      - name: Fabricar el APK
+        working-directory: medidas-android
+        run: gradle --no-daemon assembleRelease
+
+      - name: Ponerle nombre
+        run: cp medidas-android/app/build/outputs/apk/release/app-release.apk Medidas.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Medidas-apk
+          path: Medidas.apk
+
+      - name: Publicar para descargar desde el móvil
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: medidas-android-${{ github.run_number }}
+          name: App Medidas (versión 1.0.${{ github.run_number }})
+          target_commitish: ${{ github.sha }}
+          make_latest: true
+          files: Medidas.apk
+          body: |
+            Archivo de instalación de la app Medidas para Android.
+            Descárgalo desde el móvil, ábrelo e instálalo. Si ya la tienes instalada, se actualiza sin perder lo guardado.

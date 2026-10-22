@@ -1,0 +1,620 @@
+<title>Medidas del Taller</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" media="print" onload="this.media='all'">
+<style>
+  /* Layout: una columna de móvil; barra fija arriba, lista de trabajos y botón grande abajo, al alcance del pulgar. */
+  :root {
+    --fondo: #f1efeb; --tarjeta: #ffffff; --texto: #1d2126; --suave: #5d646d; --borde: #dedad3;
+    --acento: #b4541a; --acento-texto: #ffffff; --aviso-fondo: #fbeee4; --peligro: #c62828; --ok: #2e7d32;
+    --letra: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --fondo: #15171a; --tarjeta: #1e2125; --texto: #eceef0; --suave: #a3a9b1; --borde: #31353b;
+      --acento: #e07a3c; --acento-texto: #15171a; --aviso-fondo: #2b211b; --peligro: #ef5350; --ok: #66bb6a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --fondo: #15171a; --tarjeta: #1e2125; --texto: #eceef0; --suave: #a3a9b1; --borde: #31353b;
+    --acento: #e07a3c; --acento-texto: #15171a; --aviso-fondo: #2b211b; --peligro: #ef5350; --ok: #66bb6a;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body { background: var(--fondo); color: var(--texto); font: 17px/1.45 var(--letra); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--tarjeta); }
+  button, input, textarea { font: inherit; color: inherit; }
+  :focus-visible { outline: 3px solid var(--acento); outline-offset: 2px; }
+  .suave { color: var(--suave); }
+
+  .barra { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; display: flex; align-items: center; gap: 10px;
+           padding-block: 12px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+           background: var(--tarjeta); border-bottom: 1px solid var(--borde); }
+  .marca { font-weight: 700; font-size: 1.2rem; margin: 0 auto 0 0; }
+  .estado { font-size: .85rem; color: var(--suave); text-align: right; }
+
+  .pagina { max-width: 720px; margin: 0 auto; padding-block: 14px calc(110px + env(safe-area-inset-bottom, 0px));
+            padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+  .alerta { background: var(--aviso-fondo); border-radius: 10px; padding: 10px 12px; font-size: .95rem; margin-bottom: 14px; }
+  .alerta p { margin: 0; }
+  h1 { font-size: 1.35rem; line-height: 1.25; margin: 4px 0 10px; text-wrap: balance; }
+
+  .boton { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 52px; padding: 0 18px;
+           border-radius: 12px; border: 1px solid var(--borde); background: var(--tarjeta); font-weight: 600; cursor: pointer; text-align: center; }
+  .boton.principal { background: var(--acento); border-color: var(--acento); color: var(--acento-texto); }
+  .boton.peligro { color: var(--peligro); border-color: var(--peligro); }
+  .boton:disabled { opacity: .5; }
+  .botones { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
+  .botones .boton { flex: 1 1 140px; }
+  .elegir { position: relative; overflow: hidden; margin: 0; }
+  .elegir input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+  .flotante { position: fixed; z-index: 4; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+              left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+              max-width: 688px; margin: 0 auto; min-height: 60px; font-size: 1.1rem; box-shadow: 0 6px 18px rgba(0,0,0,.22); }
+
+  label { display: block; font-weight: 600; margin: 16px 0 6px; }
+  input[type="text"], input[type="search"], textarea { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--borde); background: var(--tarjeta); }
+  textarea { min-height: 90px; resize: vertical; }
+  .ayuda { font-size: .88rem; color: var(--suave); margin: 6px 0 0; }
+
+  .pestanas { display: flex; gap: 6px; margin: 12px 0; }
+  .pestanas button { flex: 1; min-height: 44px; border-radius: 10px; border: 1px solid var(--borde); background: var(--tarjeta);
+                     color: var(--suave); font-weight: 600; cursor: pointer; }
+  .pestanas button[aria-pressed="true"] { background: var(--texto); color: var(--fondo); border-color: var(--texto); }
+
+  .trabajo { display: flex; gap: 12px; align-items: center; width: 100%; text-align: left; background: var(--tarjeta);
+             border: 1px solid var(--borde); border-radius: 12px; padding: 10px; margin-bottom: 10px; cursor: pointer; }
+  .trabajo img, .trabajo .sin-foto { width: 72px; height: 72px; flex: none; border-radius: 8px; object-fit: cover; background: var(--fondo);
+             display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+  .trabajo .texto { min-width: 0; }
+  .trabajo .titulo { display: block; font-weight: 650; overflow-wrap: anywhere; }
+  .trabajo .meta { display: block; font-size: .87rem; color: var(--suave); margin-top: 2px; }
+  .etiqueta { display: inline-block; font-size: .75rem; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--borde); color: var(--suave); margin-top: 4px; }
+  .vacio { text-align: center; color: var(--suave); padding: 36px 0; }
+
+  .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin: 12px 0; }
+  .foto { position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 10px; overflow: hidden; background: var(--tarjeta);
+          border: 1px solid var(--borde); padding: 0; cursor: pointer; }
+  .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .quitar { position: absolute; top: 4px; right: 4px; width: 32px; height: 32px; border-radius: 50%; border: 0;
+            background: rgba(0,0,0,.65); color: #fff; cursor: pointer; }
+  .notas { white-space: pre-wrap; background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px; padding: 10px 12px; margin: 10px 0; }
+  .confirmar { background: var(--aviso-fondo); border-radius: 12px; padding: 10px 12px; margin: 10px 0; }
+  .confirmar p { margin: 0; font-weight: 600; }
+
+  .aviso { position: fixed; z-index: 20; bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+           left: max(16px, env(safe-area-inset-left, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+           max-width: 560px; margin: 0 auto; background: var(--texto); color: var(--fondo); padding: 12px 16px; border-radius: 10px; text-align: center; }
+
+  .visor { position: fixed; inset: 0; z-index: 30; background: #000; }
+  .visor-marco { position: absolute; inset: 0; overflow: auto; display: flex; }
+  .visor-marco img { margin: auto; max-width: 100%; max-height: 100%; object-fit: contain; }
+  .visor-marco.ampliada img { max-width: none; max-height: none; width: 250%; }
+  .visor-cerrar { position: absolute; z-index: 31; top: calc(10px + env(safe-area-inset-top, 0px)); right: calc(10px + env(safe-area-inset-right, 0px));
+                  width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(0,0,0,.6); color: #fff; font-size: 1.3rem; cursor: pointer; }
+  .visor-pie { position: absolute; z-index: 31; left: 0; right: 0; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+               display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; padding: 0 16px; }
+  .visor-pie .boton { background: rgba(0,0,0,.65); color: #fff; border-color: rgba(255,255,255,.4); }
+  .visor-pie .boton.peligro { color: #ff8a80; border-color: #ff8a80; }
+  .copia { margin-top: 28px; padding-top: 6px; border-top: 1px solid var(--borde); }
+  .copia h2 { font-size: .85rem; text-transform: uppercase; letter-spacing: .06em; color: var(--suave); margin: 14px 0 6px; }
+  .copia p { margin: 0; font-size: .95rem; }
+  .alerta .boton { min-height: 44px; margin-top: 8px; }
+</style>
+
+<header class="barra">
+  <p class="marca">📐 Medidas</p>
+  <span id="estado" class="estado" role="status"></span>
+</header>
+<main class="pagina" id="vista"><p class="vacio">Cargando…</p></main>
+<div id="aviso" class="aviso" role="status" hidden></div>
+<div id="visor" class="visor" hidden>
+  <button id="visor-cerrar" class="visor-cerrar" type="button" aria-label="Cerrar">✕</button>
+  <div id="visor-marco" class="visor-marco"><img id="visor-img" alt="Foto de las medidas"></div>
+  <div id="visor-pie" class="visor-pie"></div>
+</div>
+
+<script src="jszip.min.js"></script>
+<script>if (!window.JSZip) document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"><\/script>');</script>
+<script>
+'use strict';
+// Todo se guarda solo en este móvil (en el almacén del navegador).
+// Como el navegador puede borrarlo, la página permite guardar una copia de seguridad
+// (un .zip con las fotos y los datos) y recuperarla después.
+
+const $ = (s, r = document) => r.querySelector(s);
+const vista = $('#vista');
+// Dentro de la app Android hay un puente (AppMedidas) para guardar y enviar la copia de seguridad.
+const app = window.AppMedidas || null;
+const DIAS_AVISO_COPIA = 7;
+
+// ------------------------------------------------------------ Utilidades
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const uuid = () => (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+const normalizar = t => String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+function fecha(iso) {
+  const d = new Date(iso), hoy = new Date(), ayer = new Date(); ayer.setDate(hoy.getDate() - 1);
+  const hora = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === hoy.toDateString()) return `hoy ${hora}`;
+  if (d.toDateString() === ayer.toDateString()) return `ayer ${hora}`;
+  return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+const diasDesde = iso => Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+let temporizador;
+function avisar(texto) {
+  const a = $('#aviso'); a.textContent = texto; a.hidden = false;
+  clearTimeout(temporizador); temporizador = setTimeout(() => { a.hidden = true; }, 3500);
+}
+function leerLocal(clave) { try { return localStorage.getItem(clave); } catch { return null; } }
+function guardarLocal(clave, valor) { try { localStorage.setItem(clave, valor); } catch { /* sin almacenamiento */ } }
+
+// ------------------------------------------------------------ Almacén del móvil
+const almacen = (() => {
+  const memoria = new Map();
+  let bd = null;
+  const lista = new Promise(ok => {
+    try {
+      const p = indexedDB.open('medidas-taller', 2);
+      p.onupgradeneeded = () => {
+        if (!p.result.objectStoreNames.contains('cola')) p.result.createObjectStore('cola', { keyPath: 'id' });
+        if (!p.result.objectStoreNames.contains('trabajos')) p.result.createObjectStore('trabajos', { keyPath: 'id' });
+      };
+      p.onsuccess = () => { bd = p.result; ok(); };
+      p.onerror = () => ok();
+    } catch { ok(); }
+  });
+  function operar(almacenNombre, modo, fn) {
+    return new Promise((ok, mal) => {
+      const tx = bd.transaction(almacenNombre, modo);
+      const r = fn(tx.objectStore(almacenNombre));
+      tx.oncomplete = () => ok(r?.result);
+      tx.onerror = () => mal(tx.error);
+      tx.onabort = () => mal(tx.error);
+    });
+  }
+  return {
+    get disponible() { return bd !== null; },
+    lista,
+    async todos() { await lista; return bd ? operar('trabajos', 'readonly', s => s.getAll()) : [...memoria.values()]; },
+    async guardar(t) { await lista; if (bd) return operar('trabajos', 'readwrite', s => s.put(t)); memoria.set(t.id, t); },
+    async borrar(id) { await lista; if (bd) return operar('trabajos', 'readwrite', s => s.delete(id)); memoria.delete(id); },
+    // Tomas que quedaron sin subir en la versión anterior de esta página (la que guardaba en la cuenta).
+    async colaAntigua() { await lista; return bd ? operar('cola', 'readonly', s => s.getAll()) : []; },
+    async vaciarColaAntigua() { await lista; if (bd) return operar('cola', 'readwrite', s => s.clear()); },
+  };
+})();
+
+async function recuperarColaAntigua() {
+  const ops = (await almacen.colaAntigua()).sort((a, b) => a.creado - b.creado);
+  if (!ops.length) return;
+  for (const op of ops) {
+    const fotos = op.fotos.filter(f => f.blob).map(f => ({ id: f.id, blob: f.blob }));
+    let t = trabajos.find(x => x.id === op.trabajoId);
+    if (t) t.fotos.push(...fotos);
+    else t = { id: op.trabajoId, titulo: op.trabajo?.titulo || 'Fotos sin título', notas: op.trabajo?.notas || '', creado_en: op.trabajo?.creado_en || new Date(op.creado).toISOString(), terminado: false, fotos };
+    await almacen.guardar(t);
+    await cargar();
+  }
+  await almacen.vaciarColaAntigua();
+}
+
+// ------------------------------------------------------------ Fotos
+async function prepararFoto(archivo) {
+  try {
+    const img = await createImageBitmap(archivo, { imageOrientation: 'from-image' });
+    const k = Math.min(1, 2200 / Math.max(img.width, img.height));
+    const lienzo = document.createElement('canvas');
+    lienzo.width = Math.round(img.width * k); lienzo.height = Math.round(img.height * k);
+    lienzo.getContext('2d').drawImage(img, 0, 0, lienzo.width, lienzo.height);
+    return (await new Promise(ok => lienzo.toBlob(ok, 'image/jpeg', 0.86))) || archivo;
+  } catch { return archivo; }
+}
+const urls = new Map();
+function urlFoto(f) {
+  if (!urls.has(f.id)) urls.set(f.id, URL.createObjectURL(f.blob));
+  return urls.get(f.id);
+}
+
+// Pide al navegador que no borre estos datos por falta de espacio (si lo permite).
+let persistenciaPedida = false;
+async function pedirQueNoSeBorre() {
+  if (persistenciaPedida) return;
+  persistenciaPedida = true;
+  try { await navigator.storage?.persist?.(); } catch { /* no disponible aquí */ }
+}
+
+// ------------------------------------------------------------ Copia de seguridad
+// Sin tildes ni eñes: algunos programas de zip las muestran mal en los nombres de carpeta.
+const nombreCarpeta = t => `${t.creado_en.slice(0, 10)} ${t.titulo}`.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80);
+
+async function hacerCopia() {
+  if (!window.JSZip) { avisar('No se ha podido preparar la copia. Recarga la página.'); return; }
+  if (!trabajos.length) { avisar('Todavía no hay nada que copiar'); return; }
+  const descargas = app ? null : await window.claude?.use?.('downloads');
+  if (!app && !descargas) { avisar('Desde aquí no se puede guardar el archivo. Abre la página en Chrome o Safari.'); return; }
+  avisar('Preparando la copia…');
+  const zip = new JSZip();
+  const datos = { app: 'medidas-del-taller', version: 1, copia_en: new Date().toISOString(), trabajos: [] };
+  for (const t of trabajos) {
+    const carpeta = `fotos/${nombreCarpeta(t)}`;
+    const fotos = t.fotos.map((f, i) => {
+      const ruta = `${carpeta}/foto-${i + 1}.jpg`;
+      zip.file(ruta, f.blob);
+      return { id: f.id, archivo: ruta };
+    });
+    datos.trabajos.push({ id: t.id, titulo: t.titulo, notas: t.notas, creado_en: t.creado_en, terminado: t.terminado, fotos });
+  }
+  zip.file('datos.json', JSON.stringify(datos, null, 2));
+  zip.file('LEEME.txt', 'Copia de seguridad de "Medidas del Taller".\n\nLas fotos están en la carpeta "fotos", una carpeta por trabajo (fecha y cliente).\nPara volver a cargarla en la app: Copia de seguridad → Recuperar una copia.\n');
+  const nombre = `medidas-copia-${new Date().toISOString().slice(0, 10)}.zip`;
+  if (app) {
+    try {
+      copiaParaEnviar = await guardarCopiaEnApp(zip, nombre);
+      guardarLocal('medidas-ultima-copia', new Date().toISOString());
+      avisar('Copia guardada en Descargas › Medidas ✔');
+      pintar();
+    } catch {
+      avisar('No se ha podido guardar la copia. Mira si queda espacio en el móvil.');
+    }
+    return;
+  }
+  const archivo = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+  try {
+    await descargas.save({ filename: nombre, data: archivo });
+    guardarLocal('medidas-ultima-copia', new Date().toISOString());
+    avisar('Copia guardada ✔');
+    pintar();
+  } catch (e) {
+    if (e?.code === 'declined') return;
+    avisar(e?.code === 'too_large' ? 'La copia es demasiado grande para guardarla de una vez.' : 'No se ha podido guardar la copia.');
+  }
+}
+
+// La copia se pasa a la app en trozos de 1 MB: así no hace falta tenerla entera en memoria.
+let copiaParaEnviar = null;
+function aBase64(bytes) {
+  let binario = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) binario += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  return btoa(binario);
+}
+async function guardarCopiaEnApp(zip, nombre) {
+  const id = app.empezarArchivo(nombre);
+  if (!id) throw new Error('No se pudo crear el archivo');
+  let trozos = [], tamano = 0;
+  const volcar = () => {
+    if (!tamano) return;
+    const junto = new Uint8Array(tamano);
+    let posicion = 0;
+    for (const t of trozos) { junto.set(t, posicion); posicion += t.length; }
+    trozos = []; tamano = 0;
+    if (!app.escribir(id, aBase64(junto))) throw new Error('No se pudo escribir');
+  };
+  try {
+    await new Promise((ok, mal) => {
+      const flujo = zip.generateInternalStream({ type: 'uint8array', streamFiles: true, compression: 'STORE' });
+      flujo.on('data', trozo => {
+        try { trozos.push(trozo); tamano += trozo.length; if (tamano >= 1 << 20) volcar(); }
+        catch (e) { flujo.pause(); mal(e); }
+      }).on('error', mal).on('end', () => { try { volcar(); ok(); } catch (e) { mal(e); } }).resume();
+    });
+  } catch (e) {
+    app.cancelar(id);
+    throw e;
+  }
+  const uri = app.terminar(id);
+  if (!uri) throw new Error('No se pudo cerrar el archivo');
+  return uri;
+}
+
+async function recuperarCopia(archivo) {
+  if (!window.JSZip) { avisar('No se ha podido leer la copia. Recarga la página.'); return; }
+  let zip, datos;
+  try {
+    zip = await JSZip.loadAsync(archivo);
+    datos = JSON.parse(await zip.file('datos.json').async('string'));
+    if (datos.app !== 'medidas-del-taller') throw new Error();
+  } catch {
+    avisar('Ese archivo no es una copia de esta app');
+    return;
+  }
+  let nuevos = 0, yaEstaban = 0;
+  for (const t of datos.trabajos) {
+    if (trabajos.some(x => x.id === t.id)) { yaEstaban++; continue; }
+    const fotos = [];
+    for (const f of t.fotos) {
+      const dentro = zip.file(f.archivo);
+      if (dentro) fotos.push({ id: f.id, blob: new Blob([await dentro.async('arraybuffer')], { type: 'image/jpeg' }) });
+    }
+    await almacen.guardar({ id: t.id, titulo: t.titulo, notas: t.notas || '', creado_en: t.creado_en, terminado: !!t.terminado, fotos });
+    nuevos++;
+  }
+  await cargar();
+  pedirQueNoSeBorre();
+  avisar(`Recuperados ${nuevos} trabajo${nuevos === 1 ? '' : 's'}${yaEstaban ? ` (${yaEstaban} ya estaban)` : ''}`);
+  pintar();
+}
+
+// ------------------------------------------------------------ Estado
+let trabajos = [];
+let pantalla = { nombre: 'lista' };
+let filtro = { texto: '', terminados: false };
+let borrador = null;
+let cargado = false;
+
+async function cargar() {
+  trabajos = (await almacen.todos()).sort((a, b) => String(b.creado_en).localeCompare(String(a.creado_en)));
+}
+
+function textoUltimaCopia() {
+  const ultima = leerLocal('medidas-ultima-copia');
+  if (!ultima) return null;
+  const dias = diasDesde(ultima);
+  return dias === 0 ? 'hoy' : dias === 1 ? 'ayer' : `hace ${dias} días`;
+}
+function copiaPendiente() {
+  if (!trabajos.length) return false;
+  const ultima = leerLocal('medidas-ultima-copia');
+  if (!ultima) return true;
+  const masNuevo = trabajos.reduce((m, t) => (t.creado_en > m ? t.creado_en : m), '');
+  return diasDesde(ultima) >= DIAS_AVISO_COPIA && masNuevo > ultima;
+}
+
+function actualizarEstado() {
+  const n = trabajos.length;
+  $('#estado').textContent = cargado ? `${n} trabajo${n === 1 ? '' : 's'} en este móvil` : '';
+}
+
+// ------------------------------------------------------------ Pantallas
+function ir(p) { pantalla = p; cerrarVisor(); window.scrollTo(0, 0); pintar(); }
+function pintar() {
+  actualizarEstado();
+  if (pantalla.nombre === 'nueva') return pintarNueva(pantalla.id || null);
+  if (pantalla.nombre === 'trabajo') return pintarTrabajo(pantalla.id);
+  pintarLista();
+}
+
+function pintarLista() {
+  const ultima = textoUltimaCopia();
+  vista.innerHTML = `
+    ${!almacen.disponible && cargado ? `<div class="alerta"><p><b>Este navegador no deja guardar datos.</b> Lo que guardes se perderá al cerrar la página. ${app ? 'Reinstala la app.' : 'Ábrela en Chrome o Safari, fuera del modo incógnito.'}</p></div>` : ''}
+    ${copiaPendiente() ? `<div class="alerta"><p><b>${ultima ? `Tu última copia de seguridad es de ${ultima}.` : 'Todavía no has hecho ninguna copia de seguridad.'}</b>
+       Si el móvil se rompe o se borran los datos del navegador, sin copia se pierden las medidas.</p>
+       <button type="button" class="boton principal" id="copia-ya">💾 Hacer copia ahora</button></div>` : ''}
+    <input type="search" id="buscar" placeholder="🔍 Buscar cliente, calle, trabajo…" value="${esc(filtro.texto)}" aria-label="Buscar">
+    <div class="pestanas">
+      <button type="button" data-t="0" aria-pressed="${!filtro.terminados}">Pendientes</button>
+      <button type="button" data-t="1" aria-pressed="${filtro.terminados}">Terminados</button>
+    </div>
+    <div id="resultados"></div>
+    <section class="copia">
+      <h2>Copia de seguridad</h2>
+      <p class="suave">Todo se guarda solo en este móvil. Haz una copia de vez en cuando: es un archivo .zip con todas las fotos${app ? ' que se guarda en Descargas › Medidas. Mándatela por correo o pásala al ordenador para tenerla fuera del móvil.' : ', que puedes guardar o mandarte por WhatsApp o correo.'}
+        ${ultima ? `Última copia: ${ultima}.` : ''}</p>
+      <div class="botones">
+        <button type="button" class="boton" id="copia">💾 Hacer copia</button>
+        ${app && copiaParaEnviar ? '<button type="button" class="boton" id="enviar-copia">📤 Enviar la copia</button>' : ''}
+        <label class="boton elegir">📂 Recuperar una copia<input type="file" accept=".zip,application/zip" id="entrada-copia"></label>
+      </div>
+    </section>
+    <button type="button" class="boton principal flotante" id="nueva">📷 Nueva toma de medidas</button>`;
+  $('#buscar').addEventListener('input', e => { filtro.texto = e.target.value; pintarResultados(); });
+  for (const b of vista.querySelectorAll('.pestanas button')) b.addEventListener('click', () => { filtro.terminados = b.dataset.t === '1'; pintarLista(); });
+  $('#nueva').addEventListener('click', () => ir({ nombre: 'nueva' }));
+  $('#copia').addEventListener('click', hacerCopia);
+  $('#enviar-copia')?.addEventListener('click', () => { if (!app.compartir(copiaParaEnviar)) avisar('No se ha podido abrir el menú de enviar'); });
+  $('#copia-ya')?.addEventListener('click', hacerCopia);
+  $('#entrada-copia').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) recuperarCopia(f); });
+  pintarResultados();
+}
+
+function pintarResultados() {
+  const contenedor = $('#resultados');
+  if (!contenedor) return;
+  if (!cargado) { contenedor.innerHTML = '<p class="vacio">Cargando…</p>'; return; }
+  const palabras = normalizar(filtro.texto).split(/\s+/).filter(Boolean);
+  const lista = trabajos.filter(t => {
+    if (!palabras.length && Boolean(t.terminado) !== filtro.terminados) return false;
+    const texto = normalizar(`${t.titulo} ${t.notas} ${fecha(t.creado_en)}`);
+    return palabras.every(p => texto.includes(p));
+  });
+  if (!lista.length) {
+    contenedor.innerHTML = `<p class="vacio">${palabras.length ? 'No hay nada con esa búsqueda.' : filtro.terminados ? 'No hay trabajos terminados.' : 'No hay medidas pendientes.<br>Pulsa el botón de abajo para añadir la primera.'}</p>`;
+    return;
+  }
+  contenedor.innerHTML = lista.map(t => `
+    <button type="button" class="trabajo" data-id="${esc(t.id)}">
+      ${t.fotos[0] ? `<img src="${esc(urlFoto(t.fotos[0]))}" alt="" loading="lazy">` : '<span class="sin-foto">📝</span>'}
+      <span class="texto">
+        <span class="titulo">${esc(t.titulo)}</span>
+        <span class="meta">${esc(fecha(t.creado_en))} · ${t.fotos.length} foto${t.fotos.length === 1 ? '' : 's'}</span>
+        ${palabras.length && t.terminado ? '<span class="etiqueta">Terminado</span>' : ''}
+      </span>
+    </button>`).join('');
+  for (const b of contenedor.querySelectorAll('.trabajo')) b.addEventListener('click', () => ir({ nombre: 'trabajo', id: b.dataset.id }));
+}
+
+// ----- Nueva toma (o añadir fotos a una existente)
+function pintarNueva(trabajoId) {
+  const existente = trabajoId ? trabajos.find(t => t.id === trabajoId) : null;
+  if (trabajoId && !existente) return ir({ nombre: 'lista' });
+  const sirve = borrador && (trabajoId ? !borrador.nuevo && borrador.id === trabajoId : borrador.nuevo);
+  if (!sirve) borrador = { id: trabajoId || uuid(), nuevo: !trabajoId, fotos: [], titulo: '', notas: '' };
+
+  vista.innerHTML = `
+    <div class="botones" style="margin-top:0"><button type="button" class="boton" id="volver" style="flex:0 0 auto">← Volver</button></div>
+    <h1>${existente ? 'Añadir fotos' : 'Nueva toma de medidas'}</h1>
+    ${existente ? `<p class="suave">${esc(existente.titulo)}</p>` : ''}
+    <div class="botones">
+      <label class="boton principal elegir">📷 Hacer foto<input type="file" accept="image/*" capture="environment" id="entrada-camara"></label>
+      <label class="boton elegir">🖼️ De la galería<input type="file" accept="image/*" multiple id="entrada-galeria"></label>
+    </div>
+    <div class="fotos" id="fotos-nuevas"></div>
+    ${existente ? '' : `
+      <label for="titulo">Cliente / obra</label>
+      <input type="text" id="titulo" placeholder="Ej.: Juan Pérez, C/ Mayor 3, puerta garaje" autocomplete="off" value="${esc(borrador.titulo)}">
+      <p class="ayuda">Pulsa el 🎤 del teclado para dictarlo en vez de escribir.</p>
+      <label for="notas">Notas <span class="suave">(opcional)</span></label>
+      <textarea id="notas">${esc(borrador.notas)}</textarea>`}
+    <div id="confirmar-guardar"></div>
+    <button type="button" class="boton principal flotante" id="guardar">💾 Guardar</button>`;
+
+  $('#volver').addEventListener('click', () => ir(existente ? { nombre: 'trabajo', id: existente.id } : { nombre: 'lista' }));
+  const pintarFotos = () => {
+    $('#fotos-nuevas').innerHTML = borrador.fotos.map((f, i) => `
+      <div class="foto"><img src="${esc(urlFoto(f))}" alt="Foto ${i + 1}">
+      <button type="button" class="quitar" data-id="${esc(f.id)}" aria-label="Quitar foto">✕</button></div>`).join('');
+    for (const b of vista.querySelectorAll('.quitar')) b.addEventListener('click', () => {
+      borrador.fotos = borrador.fotos.filter(f => f.id !== b.dataset.id); pintarFotos();
+    });
+  };
+  const anadir = async archivos => {
+    const g = $('#guardar'); g.disabled = true; g.textContent = 'Preparando fotos…';
+    for (const a of archivos) { borrador.fotos.push({ id: uuid(), blob: await prepararFoto(a) }); pintarFotos(); }
+    g.disabled = false; g.textContent = '💾 Guardar';
+  };
+  // El selector de fotos va encima del botón (invisible): el toque llega directo al móvil.
+  for (const e of ['#entrada-camara', '#entrada-galeria']) {
+    $(e).addEventListener('change', ev => { anadir([...ev.target.files]); ev.target.value = ''; });
+  }
+  if (!existente) {
+    $('#titulo').addEventListener('input', e => { borrador.titulo = e.target.value; });
+    $('#notas').addEventListener('input', e => { borrador.notas = e.target.value; });
+  }
+  pintarFotos();
+
+  const guardar = async () => {
+    try {
+      if (existente) {
+        await almacen.guardar({ ...existente, fotos: [...existente.fotos, ...borrador.fotos] });
+      } else {
+        await almacen.guardar({
+          id: borrador.id, titulo: borrador.titulo.trim(), notas: borrador.notas.trim(),
+          creado_en: new Date().toISOString(), terminado: false, fotos: borrador.fotos,
+        });
+      }
+    } catch {
+      avisar('No se ha podido guardar: puede que el móvil esté sin espacio.');
+      return;
+    }
+    pedirQueNoSeBorre();
+    const destino = existente ? { nombre: 'trabajo', id: existente.id } : { nombre: 'lista' };
+    borrador = null;
+    if (!existente) filtro = { texto: '', terminados: false };
+    await cargar();
+    avisar('Guardado ✔');
+    ir(destino);
+  };
+  $('#guardar').addEventListener('click', () => {
+    if (!existente && !borrador.titulo.trim()) { avisar('Pon para quién es (cliente u obra)'); $('#titulo').focus(); return; }
+    if (existente && !borrador.fotos.length) { avisar('Añade al menos una foto'); return; }
+    if (!existente && !borrador.fotos.length) {
+      $('#confirmar-guardar').innerHTML = `<div class="confirmar"><p>No has puesto ninguna foto. ¿Guardar igualmente?</p>
+        <div class="botones"><button type="button" class="boton" id="no-guardar">Cancelar</button>
+        <button type="button" class="boton principal" id="si-guardar">Guardar sin foto</button></div></div>`;
+      $('#no-guardar').addEventListener('click', () => { $('#confirmar-guardar').innerHTML = ''; });
+      $('#si-guardar').addEventListener('click', guardar);
+      return;
+    }
+    guardar();
+  });
+}
+
+// ----- Un trabajo
+function pintarTrabajo(id) {
+  const t = trabajos.find(x => x.id === id);
+  if (!t) return ir({ nombre: 'lista' });
+  vista.innerHTML = `
+    <div class="botones" style="margin-top:0"><button type="button" class="boton" id="volver" style="flex:0 0 auto">← Volver</button></div>
+    <div id="cabecera">
+      <h1>${esc(t.titulo)}</h1>
+      <p class="suave">${esc(fecha(t.creado_en))}${t.terminado ? ' · <span class="etiqueta">Terminado</span>' : ''}</p>
+      ${t.notas ? `<div class="notas">${esc(t.notas)}</div>` : ''}
+    </div>
+    <div class="fotos">${t.fotos.map((f, i) => `<button type="button" class="foto" data-i="${i}"><img src="${esc(urlFoto(f))}" alt="Foto ${i + 1}" loading="lazy"></button>`).join('')}</div>
+    ${t.fotos.length ? '<p class="ayuda">Toca una foto para verla en grande.</p>' : '<p class="suave">Sin fotos.</p>'}
+    <div class="botones">
+      <button type="button" class="boton principal" id="anadir">➕ Añadir fotos</button>
+      <button type="button" class="boton" id="editar">✏️ Editar texto</button>
+      <button type="button" class="boton" id="terminado">${t.terminado ? '↩️ Volver a pendiente' : '✅ Marcar terminado'}</button>
+      <button type="button" class="boton peligro" id="borrar">🗑️ Borrar</button>
+    </div>
+    <div id="confirmar-borrar"></div>`;
+  $('#volver').addEventListener('click', () => ir({ nombre: 'lista' }));
+  $('#anadir').addEventListener('click', () => ir({ nombre: 'nueva', id: t.id }));
+  for (const b of vista.querySelectorAll('.foto')) {
+    const f = t.fotos[Number(b.dataset.i)];
+    b.addEventListener('click', () => abrirVisor(f, async () => {
+      await almacen.guardar({ ...t, fotos: t.fotos.filter(x => x.id !== f.id) });
+      await cargar();
+      pintarTrabajo(id);
+    }));
+  }
+  $('#terminado').addEventListener('click', async () => {
+    await almacen.guardar({ ...t, terminado: !t.terminado }); await cargar();
+    avisar(t.terminado ? 'Vuelve a pendientes' : 'Pasado a terminados'); pintarTrabajo(id);
+  });
+  $('#borrar').addEventListener('click', () => {
+    $('#confirmar-borrar').innerHTML = `<div class="confirmar"><p>¿Borrar este trabajo con todas sus fotos?</p>
+      <div class="botones"><button type="button" class="boton" id="no-borrar">Cancelar</button>
+      <button type="button" class="boton peligro" id="si-borrar">Sí, borrar</button></div></div>`;
+    $('#confirmar-borrar').scrollIntoView({ block: 'nearest' });
+    $('#no-borrar').addEventListener('click', () => { $('#confirmar-borrar').innerHTML = ''; });
+    $('#si-borrar').addEventListener('click', async () => { await almacen.borrar(t.id); await cargar(); avisar('Borrado'); ir({ nombre: 'lista' }); });
+  });
+  $('#editar').addEventListener('click', () => {
+    $('#cabecera').innerHTML = `
+      <label for="ed-titulo">Cliente / obra</label><input type="text" id="ed-titulo" value="${esc(t.titulo)}">
+      <label for="ed-notas">Notas</label><textarea id="ed-notas">${esc(t.notas)}</textarea>
+      <div class="botones"><button type="button" class="boton" id="ed-cancelar">Cancelar</button>
+      <button type="button" class="boton principal" id="ed-guardar">Guardar</button></div>`;
+    $('#ed-cancelar').addEventListener('click', () => pintarTrabajo(id));
+    $('#ed-guardar').addEventListener('click', async () => {
+      const titulo = $('#ed-titulo').value.trim();
+      if (!titulo) { avisar('El cliente / obra no puede quedar vacío'); return; }
+      await almacen.guardar({ ...t, titulo, notas: $('#ed-notas').value.trim() }); await cargar();
+      avisar('Guardado ✔'); pintarTrabajo(id);
+    });
+  });
+}
+
+// ------------------------------------------------------------ Visor de fotos
+function abrirVisor(f, alBorrar) {
+  $('#visor-img').src = urlFoto(f);
+  $('#visor-marco').classList.remove('ampliada');
+  const pie = $('#visor-pie');
+  const normal = () => {
+    pie.innerHTML = '<button type="button" class="boton peligro" id="v-borrar">🗑️ Borrar foto</button>';
+    $('#v-borrar').addEventListener('click', () => {
+      pie.innerHTML = `<button type="button" class="boton" id="v-no">Cancelar</button>
+        <button type="button" class="boton peligro" id="v-si">Sí, borrar foto</button>`;
+      $('#v-no').addEventListener('click', normal);
+      $('#v-si').addEventListener('click', async () => { await alBorrar(); cerrarVisor(); avisar('Foto borrada'); });
+    });
+  };
+  normal();
+  $('#visor').hidden = false;
+}
+function cerrarVisor() { $('#visor').hidden = true; $('#visor-img').removeAttribute('src'); }
+$('#visor-cerrar').addEventListener('click', cerrarVisor);
+$('#visor-img').addEventListener('click', () => $('#visor-marco').classList.toggle('ampliada'));
+
+// Botón "atrás" del móvil (solo en la app): devuelve true si lo ha gestionado la página.
+window.atras = () => {
+  if (!$('#visor').hidden) { cerrarVisor(); return true; }
+  if (pantalla.nombre === 'nueva' && pantalla.id) { ir({ nombre: 'trabajo', id: pantalla.id }); return true; }
+  if (pantalla.nombre !== 'lista') { ir({ nombre: 'lista' }); return true; }
+  return false;
+};
+
+// ------------------------------------------------------------ Arranque
+(async () => {
+  await almacen.lista;
+  await cargar();
+  await recuperarColaAntigua();
+  cargado = true;
+  pintar();
+})();
+pintarLista();
+</script>
