@@ -1,7 +1,7 @@
 // Permite abrir la app sin cobertura y ver las fotos ya vistas.
 // Los datos (lista de trabajos y cola de subida) los guarda la propia app en el móvil.
 
-const VERSION = 'medidas-v1';
+const VERSION = 'medidas-v2';
 const FOTOS = 'medidas-fotos';
 const APP = ['/', '/app.js', '/estilos.css', '/manifest.webmanifest', '/icono-180.png', '/icono-192.png', '/icono-512.png'];
 

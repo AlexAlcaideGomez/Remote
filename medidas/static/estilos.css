@@ -45,6 +45,8 @@ h2 { font-size: .9rem; text-transform: uppercase; letter-spacing: .04em; color: 
 .boton:disabled { opacity: .5; }
 .botones { display: flex; gap: 10px; flex-wrap: wrap; margin: 14px 0; }
 .botones .boton { flex: 1 1 140px; }
+.elegir { position: relative; overflow: hidden; margin: 0; }
+.elegir input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 .flotante { position: fixed; z-index: 4; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom));
             max-width: 688px; margin: 0 auto; font-size: 1.1rem; min-height: 60px;
             box-shadow: 0 6px 18px rgba(0,0,0,.22); }

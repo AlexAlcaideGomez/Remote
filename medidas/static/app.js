@@ -419,11 +419,9 @@ async function pintarNueva(trabajoId) {
     <h1>${existente ? 'Añadir fotos' : 'Nueva toma de medidas'}</h1>
     ${existente ? `<p class="suave">${esc(existente.titulo)}</p>` : ''}
     <div class="botones">
-      <button type="button" class="boton principal" id="hacer-foto">📷 Hacer foto</button>
-      <button type="button" class="boton" id="de-galeria">🖼️ De la galería</button>
+      <label class="boton principal elegir">📷 Hacer foto<input type="file" accept="image/*" capture="environment" id="entrada-camara"></label>
+      <label class="boton elegir">🖼️ De la galería<input type="file" accept="image/*" multiple id="entrada-galeria"></label>
     </div>
-    <input type="file" accept="image/*" capture="environment" id="entrada-camara" style="display:none">
-    <input type="file" accept="image/*" multiple id="entrada-galeria" style="display:none">
     <div class="fotos" id="fotos-nuevas"></div>
     ${existente ? '' : `
       <label for="titulo">Cliente / obra</label>
@@ -456,8 +454,9 @@ async function pintarNueva(trabajoId) {
     boton.disabled = false;
     boton.textContent = '💾 Guardar';
   };
-  for (const [boton, entrada] of [['#hacer-foto', '#entrada-camara'], ['#de-galeria', '#entrada-galeria']]) {
-    $(boton).addEventListener('click', () => $(entrada).click());
+  // El selector de fotos va encima del botón (invisible): así el toque llega directo al móvil,
+  // que es lo que funciona en todos los navegadores.
+  for (const entrada of ['#entrada-camara', '#entrada-galeria']) {
     $(entrada).addEventListener('change', e => { anadir([...e.target.files]); e.target.value = ''; });
   }
   if (!existente) {
